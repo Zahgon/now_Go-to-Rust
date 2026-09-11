@@ -1,0 +1,19 @@
+[package]
+name = "now"
+version = "1.1.5"
+edition = "2021"
+rust-version = "1.70"
+description = "Now is a time toolkit for rust"
+repository = "https://github.com/jinzhu/now"
+license = "MIT"
+readme = "README.md"
+keywords = ["time", "date", "parse", "timezone"]
+categories = ["date-and-time"]
+
+[dependencies]
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+chrono-tz = { version = "0.10", default-features = false, features = ["std"] }
+iana-time-zone = "0.1"
+regex = "1"
+
+[dev-dependencies]

@@ -1,121 +1,131 @@
 ## Now
 
-Now is a time toolkit for golang
+Now is a time toolkit for rust
 
-[![go report card](https://goreportcard.com/badge/github.com/jinzhu/now "go report card")](https://goreportcard.com/report/github.com/jinzhu/now)
+[![crates.io](https://img.shields.io/crates/v/now.svg "crates.io")](https://crates.io/crates/now)
 [![test status](https://github.com/jinzhu/now/workflows/tests/badge.svg?branch=master "test status")](https://github.com/jinzhu/now/actions)
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
 ## Install
 
 ```
-go get -u github.com/jinzhu/now
+cargo add now
 ```
 
 ## Usage
 
 Calculating time based on current time
 
-```go
-import "github.com/jinzhu/now"
+```rust
+use now::Weekday;
 
-time.Now() // 2013-11-18 17:51:49.123456789 Mon
+now::Time::now(); // 2013-11-18 17:51:49.123456789 Mon
 
-now.BeginningOfMinute()        // 2013-11-18 17:51:00 Mon
-now.BeginningOfHour()          // 2013-11-18 17:00:00 Mon
-now.BeginningOfDay()           // 2013-11-18 00:00:00 Mon
-now.BeginningOfWeek()          // 2013-11-17 00:00:00 Sun
-now.BeginningOfMonth()         // 2013-11-01 00:00:00 Fri
-now.BeginningOfQuarter()       // 2013-10-01 00:00:00 Tue
-now.BeginningOfYear()          // 2013-01-01 00:00:00 Tue
+now::beginning_of_minute();        // 2013-11-18 17:51:00 Mon
+now::beginning_of_hour();          // 2013-11-18 17:00:00 Mon
+now::beginning_of_day();           // 2013-11-18 00:00:00 Mon
+now::beginning_of_week();          // 2013-11-17 00:00:00 Sun
+now::beginning_of_month();         // 2013-11-01 00:00:00 Fri
+now::beginning_of_quarter();       // 2013-10-01 00:00:00 Tue
+now::beginning_of_year();          // 2013-01-01 00:00:00 Tue
 
-now.EndOfMinute()              // 2013-11-18 17:51:59.999999999 Mon
-now.EndOfHour()                // 2013-11-18 17:59:59.999999999 Mon
-now.EndOfDay()                 // 2013-11-18 23:59:59.999999999 Mon
-now.EndOfWeek()                // 2013-11-23 23:59:59.999999999 Sat
-now.EndOfMonth()               // 2013-11-30 23:59:59.999999999 Sat
-now.EndOfQuarter()             // 2013-12-31 23:59:59.999999999 Tue
-now.EndOfYear()                // 2013-12-31 23:59:59.999999999 Tue
+now::end_of_minute();              // 2013-11-18 17:51:59.999999999 Mon
+now::end_of_hour();                // 2013-11-18 17:59:59.999999999 Mon
+now::end_of_day();                 // 2013-11-18 23:59:59.999999999 Mon
+now::end_of_week();                // 2013-11-23 23:59:59.999999999 Sat
+now::end_of_month();               // 2013-11-30 23:59:59.999999999 Sat
+now::end_of_quarter();             // 2013-12-31 23:59:59.999999999 Tue
+now::end_of_year();                // 2013-12-31 23:59:59.999999999 Tue
 
-now.WeekStartDay = time.Monday // Set Monday as first day, default is Sunday
-now.EndOfWeek()                // 2013-11-24 23:59:59.999999999 Sun
+now::set_week_start_day(Weekday::Monday); // Set Monday as first day, default is Sunday
+now::end_of_week();                       // 2013-11-24 23:59:59.999999999 Sun
 ```
 
 Calculating time based on another time
 
-```go
-t := time.Date(2013, 02, 18, 17, 51, 49, 123456789, time.Now().Location())
-now.With(t).EndOfMonth()   // 2013-02-28 23:59:59.999999999 Thu
+```rust
+use now::{Location, Time};
+
+let t = Time::new(2013, 2, 18, 17, 51, 49, 123456789, &Location::local());
+now::with(t).end_of_month();   // 2013-02-28 23:59:59.999999999 Thu
 ```
 
 Calculating time based on configuration
 
-```go
-location, err := time.LoadLocation("Asia/Shanghai")
+```rust
+use now::{Config, Location, Time, Weekday};
 
-myConfig := &now.Config{
-	WeekStartDay: time.Monday,
-	TimeLocation: location,
-	TimeFormats: []string{"2006-01-02 15:04:05"},
-}
+let location = Location::load("Asia/Shanghai").unwrap();
 
-t := time.Date(2013, 11, 18, 17, 51, 49, 123456789, time.Now().Location()) // // 2013-11-18 17:51:49.123456789 Mon
-myConfig.With(t).BeginningOfWeek()         // 2013-11-18 00:00:00 Mon
+let my_config = Config {
+    week_start_day: Weekday::Monday,
+    time_location: Some(location),
+    time_formats: vec!["2006-01-02 15:04:05".to_string()],
+};
 
-myConfig.Parse("2002-10-12 22:14:01")     // 2002-10-12 22:14:01
-myConfig.Parse("2002-10-12 22:14")        // returns error 'can't parse string as time: 2002-10-12 22:14'
+// 2013-11-18 17:51:49.123456789 Mon
+let t = Time::new(2013, 11, 18, 17, 51, 49, 123456789, &Location::local());
+my_config.with(t).beginning_of_week();       // 2013-11-18 00:00:00 Mon
+
+my_config.parse(&["2002-10-12 22:14:01"]);   // 2002-10-12 22:14:01
+my_config.parse(&["2002-10-12 22:14"]);      // returns error 'Can't parse string as time: 2002-10-12 22:14'
 ```
 
 ### Monday/Sunday
 
-Don't be bothered with the `WeekStartDay` setting, you can use `Monday`, `Sunday`
+Don't be bothered with the week start day setting, you can use `monday`, `sunday`
 
-```go
-now.Monday()              // 2013-11-18 00:00:00 Mon
-now.Monday("17:44")       // 2013-11-18 17:44:00 Mon
-now.Sunday()              // 2013-11-24 00:00:00 Sun (Next Sunday)
-now.Sunday("18:19:24")    // 2013-11-24 18:19:24 Sun (Next Sunday)
-now.EndOfSunday()         // 2013-11-24 23:59:59.999999999 Sun (End of next Sunday)
+```rust
+now::monday(&[]);            // 2013-11-18 00:00:00 Mon
+now::monday(&["17:44"]);     // 2013-11-18 17:44:00 Mon
+now::sunday(&[]);            // 2013-11-24 00:00:00 Sun (Next Sunday)
+now::sunday(&["18:19:24"]);  // 2013-11-24 18:19:24 Sun (Next Sunday)
+now::end_of_sunday();        // 2013-11-24 23:59:59.999999999 Sun (End of next Sunday)
 
-t := time.Date(2013, 11, 24, 17, 51, 49, 123456789, time.Now().Location()) // 2013-11-24 17:51:49.123456789 Sun
-now.With(t).Monday()              // 2013-11-18 00:00:00 Mon (Last Monday if today is Sunday)
-now.With(t).Monday("17:44")       // 2013-11-18 17:44:00 Mon (Last Monday if today is Sunday)
-now.With(t).Sunday()              // 2013-11-24 00:00:00 Sun (Beginning Of Today if today is Sunday)
-now.With(t).Sunday("18:19:24")    // 2013-11-24 18:19:24 Sun (Beginning Of Today if today is Sunday)
-now.With(t).EndOfSunday()         // 2013-11-24 23:59:59.999999999 Sun (End of Today if today is Sunday)
+// 2013-11-24 17:51:49.123456789 Sun
+let t = Time::new(2013, 11, 24, 17, 51, 49, 123456789, &Location::local());
+now::with(t.clone()).monday(&[]);           // 2013-11-18 00:00:00 Mon (Last Monday if today is Sunday)
+now::with(t.clone()).monday(&["17:44"]);    // 2013-11-18 17:44:00 Mon (Last Monday if today is Sunday)
+now::with(t.clone()).sunday(&[]);           // 2013-11-24 00:00:00 Sun (Beginning Of Today if today is Sunday)
+now::with(t.clone()).sunday(&["18:19:24"]); // 2013-11-24 18:19:24 Sun (Beginning Of Today if today is Sunday)
+now::with(t).end_of_sunday();               // 2013-11-24 23:59:59.999999999 Sun (End of Today if today is Sunday)
 ```
 
 ### Parse String to Time
 
-```go
-time.Now() // 2013-11-18 17:51:49.123456789 Mon
+Time formats are [Go reference layouts](https://pkg.go.dev/time#pkg-constants),
+written out with the reference time `Mon Jan 2 15:04:05 MST 2006`.
 
-// Parse(string) (time.Time, error)
-t, err := now.Parse("2017")                // 2017-01-01 00:00:00, nil
-t, err := now.Parse("2017-10")             // 2017-10-01 00:00:00, nil
-t, err := now.Parse("2017-10-13")          // 2017-10-13 00:00:00, nil
-t, err := now.Parse("1999-12-12 12")       // 1999-12-12 12:00:00, nil
-t, err := now.Parse("1999-12-12 12:20")    // 1999-12-12 12:20:00, nil
-t, err := now.Parse("1999-12-12 12:20:21") // 1999-12-12 12:20:21, nil
-t, err := now.Parse("10-13")               // 2013-10-13 00:00:00, nil
-t, err := now.Parse("12:20")               // 2013-11-18 12:20:00, nil
-t, err := now.Parse("12:20:13")            // 2013-11-18 12:20:13, nil
-t, err := now.Parse("14")                  // 2013-11-18 14:00:00, nil
-t, err := now.Parse("99:99")               // 2013-11-18 12:20:00, Can't parse string as time: 99:99
+```rust
+now::Time::now(); // 2013-11-18 17:51:49.123456789 Mon
 
-// MustParse must parse string to time or it will panic
-now.MustParse("2013-01-13")             // 2013-01-13 00:00:00
-now.MustParse("02-17")                  // 2013-02-17 00:00:00
-now.MustParse("2-17")                   // 2013-02-17 00:00:00
-now.MustParse("8")                      // 2013-11-18 08:00:00
-now.MustParse("2002-10-12 22:14")       // 2002-10-12 22:14:00
-now.MustParse("99:99")                  // panic: Can't parse string as time: 99:99
+// parse(&[&str]) -> Result<Time, ParseError>
+now::parse(&["2017"]);                // Ok(2017-01-01 00:00:00)
+now::parse(&["2017-10"]);             // Ok(2017-10-01 00:00:00)
+now::parse(&["2017-10-13"]);          // Ok(2017-10-13 00:00:00)
+now::parse(&["1999-12-12 12"]);       // Ok(1999-12-12 12:00:00)
+now::parse(&["1999-12-12 12:20"]);    // Ok(1999-12-12 12:20:00)
+now::parse(&["1999-12-12 12:20:21"]); // Ok(1999-12-12 12:20:21)
+now::parse(&["10-13"]);               // Ok(2013-10-13 00:00:00)
+now::parse(&["12:20"]);               // Ok(2013-11-18 12:20:00)
+now::parse(&["12:20:13"]);            // Ok(2013-11-18 12:20:13)
+now::parse(&["14"]);                  // Ok(2013-11-18 14:00:00)
+now::parse(&["99:99"]);               // Err(Can't parse string as time: 99:99)
+
+// must_parse must parse string to time or it will panic
+now::must_parse(&["2013-01-13"]);       // 2013-01-13 00:00:00
+now::must_parse(&["02-17"]);            // 2013-02-17 00:00:00
+now::must_parse(&["2-17"]);             // 2013-02-17 00:00:00
+now::must_parse(&["8"]);                // 2013-11-18 08:00:00
+now::must_parse(&["2002-10-12 22:14"]); // 2002-10-12 22:14:00
+now::must_parse(&["99:99"]);            // panic: Can't parse string as time: 99:99
 ```
 
-Extend `now` to support more formats is quite easy, just update `now.TimeFormats` with other time layouts, e.g:
+Extend `now` to support more formats is quite easy, just update the time formats
+with other time layouts, e.g:
 
-```go
-now.TimeFormats = append(now.TimeFormats, "02 Jan 2006 15:04")
+```rust
+now::append_time_format("02 Jan 2006 15:04");
 ```
 
 Please send me pull requests if you want a format to be supported officially
